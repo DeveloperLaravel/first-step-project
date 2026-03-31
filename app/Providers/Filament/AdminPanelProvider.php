@@ -20,6 +20,7 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
 use App\Http\Middleware\CheckUserActive;
 use App\Http\Middleware\UpdateLastSeen;
 use App\Http\Middleware\UpdateUserActivity;
+use Filament\Forms\Components\FileUpload;
 use Filament\Navigation\UserMenuItem;
 
 class AdminPanelProvider extends PanelProvider
@@ -27,6 +28,9 @@ class AdminPanelProvider extends PanelProvider
 
     public function panel(Panel $panel): Panel
     {
+           FileUpload::configureUsing(function (FileUpload $component) {
+        $component->disk('public');
+    });
         return $panel
             ->default()
             ->id('admin')

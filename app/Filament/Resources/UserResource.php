@@ -67,7 +67,9 @@ class UserResource extends Resource
                 ->required(fn ($context) => $context === 'create')
                 ->dehydrateStateUsing(fn ($state) => filled($state) ? bcrypt($state) : null)
                 ->dehydrated(fn ($state) => filled($state)),
-
+TextInput::make('balance')
+    ->numeric() ->label('الرصيد')
+    ->default(0),
             Select::make('roles')
                 ->label('الدور')
                 ->multiple()
@@ -121,7 +123,8 @@ class UserResource extends Resource
                 TextColumn::make('email')
                     ->label('البريد')
                     ->searchable(),
-
+TextColumn::make('balance')
+    ->label('الرصيد'),
                 TextColumn::make('roles.name')
                     ->label('الدور')
                     ->badge()

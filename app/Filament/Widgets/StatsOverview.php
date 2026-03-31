@@ -2,13 +2,14 @@
 
 namespace App\Filament\Widgets;
 
+use App\Models\Card as ModelsCard;
+use App\Models\Order;
 use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Card;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-
 class StatsOverview extends BaseWidget
 {
 
@@ -41,6 +42,11 @@ class StatsOverview extends BaseWidget
                 ->description('الصلاحيات في النظام')
                 ->descriptionIcon('heroicon-m-lock-closed')
                 ->color('info'),
+        // Card::make('إجمالي الطلبات', Order::count()),
+        //         Card::make('الكروت المستخدمة', Card::where('is_used',1)->count()),
+ Card::make('الطلبات', Order::count()),
+        Card::make('الكروت المستخدمة', ModelsCard::where('is_used', 1)->count()),
+
 
         ];
     }

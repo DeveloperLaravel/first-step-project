@@ -34,7 +34,7 @@ use SoftDeletes;
         'last_login_at',
         'last_login_ip',
         'last_seen_at',
-
+ 'balance',
     ];
 
     /**
@@ -88,15 +88,22 @@ use SoftDeletes;
             'password' => 'hashed',
         ];
     }
+public function createdCards()
+{
+    return $this->hasMany(Card::class, 'created_by');
+}
 
-public function getFilamentName(): string
+public function usedCards()
 {
-    return $this->name . ' 🔥';
+    return $this->hasMany(Card::class, 'used_by');
 }
-public function getFilamentAvatarUrl(): ?string
-{
-    return $this->avatar
-        ? asset('storage/' . $this->avatar)
-        : 'https://ui-avatars.com/api/?name=' . $this->name;
-}
+ public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
 }

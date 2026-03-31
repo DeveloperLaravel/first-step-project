@@ -29,10 +29,11 @@ return new class extends Migration
 $table->timestamp('last_seen_at')->nullable();
 $table->string('user_agent')->nullable();
             $table->rememberToken();
-            $table->timestamps();
 
               // Soft delete (مهم جدًا في الأنظمة)
             $table->softDeletes();
+            $table->timestamps();
+
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -43,7 +44,6 @@ $table->string('user_agent')->nullable();
 
         Schema::create('sessions', function (Blueprint $table) {
             $table->string('id')->primary();
-            $table->foreignId('user_id')->nullable()->index();
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();
             $table->longText('payload');

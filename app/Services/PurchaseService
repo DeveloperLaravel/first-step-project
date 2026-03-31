@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\Transaction;
+use Illuminate\Support\Facades\DB;
+use Exception;
+
+class PurchaseService
+{
+   public function buy($user, $amount, $description = null)
+{
+    return DB::transaction(function () use ($user, $amount, $description) {
+
+        if ($user->balance < $amount) {
+            throw new Exception('الرصيد غير كافي');
+        }
+
+        $user->decrement('balance', $amount);
+
+        Transaction::create([
+            'user_id' => $user->id,
+            'amount' => $amount,
+            'type' => 'purchase',
+            'description' => $description,
+        ]);
+    });
+}
+}

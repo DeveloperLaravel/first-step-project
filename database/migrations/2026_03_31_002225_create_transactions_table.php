@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id');
-$table->decimal('amount', 10, 2);
-$table->string('type'); // recharge  purchase
-$table->text('description')->nullable();
+            $table->foreignId('user_id')->constrained('users')
+              ->cascadeOnDelete();
+            $table->decimal('amount', 10, 2);
+            $table->text('description')->nullable();
+            $table->enum('type', ['recharge', 'purchase']);
+
             $table->timestamps();
         });
     }

@@ -12,4 +12,16 @@ class OrderItem extends Model
         'quantity',
         'price'
     ];
+    public function order()
+    {
+        return $this->belongsTo(Order::class);
+    }
+ public function medicine()
+    {
+        return $this->belongsTo(Medicine::class);
+    }
+        public function getTotalAttribute()
+    {
+        return $this->quantity * $this->price;
+    }
 }

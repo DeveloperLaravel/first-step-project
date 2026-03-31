@@ -68,8 +68,7 @@ class UserResource extends Resource
                 ->dehydrateStateUsing(fn ($state) => filled($state) ? bcrypt($state) : null)
                 ->dehydrated(fn ($state) => filled($state)),
 TextInput::make('balance')
-    ->numeric() ->label('الرصيد')
-    ->default(0),
+    ->numeric() ->label('الرصيد')->disabled(),
             Select::make('roles')
                 ->label('الدور')
                 ->multiple()
@@ -124,7 +123,7 @@ TextInput::make('balance')
                     ->label('البريد')
                     ->searchable(),
 TextColumn::make('balance')
-    ->label('الرصيد'),
+    ->label('الرصيد')  ->sortable(),
                 TextColumn::make('roles.name')
                     ->label('الدور')
                     ->badge()

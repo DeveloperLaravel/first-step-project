@@ -38,6 +38,9 @@ class UserResource extends Resource
     use HasSoftDeletes;
 
     protected static ?string $model = User::class;
+    protected static ?int $navigationSort = 1;
+    protected static ?string $navigationGroup = 'ادارة المستخدمين';
+
     protected static ?string $navigationLabel = 'حسابات المستخدمين';
     protected static ?string $modelLabel = 'حساب المستخدم';
         protected static ?string $pluralModelLabel = 'حسابات المستخدمين';

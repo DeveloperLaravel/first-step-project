@@ -23,9 +23,9 @@ class TransactionResource extends Resource
     protected static ?string $model = Transaction::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-banknotes';
-    protected static ?string $navigationGroup = 'المالية';
-    protected static ?string $label = 'عملية';
     protected static ?string $pluralLabel = 'العمليات';
+ protected static ?int $navigationSort = 5;
+protected static ?string $navigationGroup = 'ادترة العمليات المالية';
 
     // 🧾 الفورم
     public static function form(Form $form): Form

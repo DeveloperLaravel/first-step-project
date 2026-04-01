@@ -1,20 +1,15 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 use App\Services\PurchaseService;
-use Illuminate\Support\Facades\DB as FacadesDB;
 
 class Order extends Model
 {
     protected $fillable = [
         'user_id',
         'total',
-        'status',
-        'order_number',
-        'notes',
     ];
 
     // العلاقات
@@ -28,42 +23,37 @@ class Order extends Model
         return $this->hasMany(OrderItem::class);
     }
 
-    // 🧮 حساب الإجمالي بشكل آمن
+    // 🧮 حساب المجموع
     public function calculateTotal()
     {
-        return $this->items()->sum(FacadesDB::raw('price * quantity'));
+        return $this->items->sum(function ($item) {
+            return $item->price * $item->quantity;
+        });
     }
 
-    // ⚙️ Events
+    // 🔥 الاحتراف الحقيقي هنا
     protected static function booted()
     {
-        // 🔢 توليد رقم الطلب
-        static::creating(function ($order) {
-            $order->order_number = 'ORD-' . date('Y') . '-' . strtoupper(Str::random(6));
-        });
+        static::created(function ($order) {
 
-        // 💰 تنفيذ عملية الشراء بعد حفظ الطلب
-        static::saved(function ($order) {
+            DB::transaction(function () use ($order) {
 
-            // نحسب الإجمالي
-            $total = $order->calculateTotal();
-
-            // نحدث المجموع فقط لو تغير
-            if ($order->total != $total) {
-                $order->updateQuietly([
+                // تحديث المجموع
+                $total = $order->calculateTotal();
+ // 🔥 2. تحديث الطلب
+                $order->update([
                     'total' => $total
                 ]);
-            }
 
-            // تنفيذ الدفع فقط لو مكتمل
-            if ($order->status === 'completed' && $total > 0) {
-
+                // خصم الرصيد + تسجيل transaction
                 app(PurchaseService::class)->buy(
                     $order->user,
                     $total,
-                    'طلب رقم ' . $order->order_number
+                    'Order #' . $order->id
                 );
-            }
+
+            });
+
         });
     }
 }

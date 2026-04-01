@@ -28,8 +28,10 @@ use Filament\Tables\Actions\{
 class RoleResource extends Resource
 {
     protected static ?string $model = Role::class;
+protected static ?int $navigationSort = 2;
+    protected static ?string $navigationGroup = 'ادارة المستخدمين';
 
-    protected static ?string $navigationIcon = 'heroicon-o-shield-check';
+protected static ?string $navigationIcon = 'heroicon-o-shield-check';
     protected static ?string $navigationLabel = 'ادوار المستخدمين';
     protected static ?string $modelLabel = 'ادوار المستخدم';
         protected static ?string $pluralModelLabel = 'ادوار المستخدمين';

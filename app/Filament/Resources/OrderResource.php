@@ -22,7 +22,8 @@ class OrderResource extends Resource
     protected static ?string $model = Order::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
-    protected static ?string $navigationGroup = 'Orders';
+ protected static ?int $navigationSort = 3;
+protected static ?string $navigationGroup = 'ادارت الطلبات';
 
     // ================= FORM =================
     public static function form(Form $form): Form
@@ -34,11 +35,13 @@ class OrderResource extends Resource
                 Select::make('user_id')
                     ->relationship('user', 'name')
                     ->searchable()
+                    ->label('المستخدم')
                     ->required(),
 
                 // 📦 عناصر الطلب
                 Repeater::make('items')
                     ->relationship()
+                              ->label('عناصر الطلب')
                     ->schema([
 
                         Select::make('medicine_id')
@@ -54,11 +57,13 @@ class OrderResource extends Resource
 
                         TextInput::make('price')
                             ->numeric()
+                              ->label('السعر')
                             ->required(),
 
                         TextInput::make('quantity')
                             ->numeric()
                             ->default(1)
+                              ->label('الكمية')
                             ->required(),
 
                     ])
@@ -74,9 +79,10 @@ class OrderResource extends Resource
         return $table->columns([
 
             Tables\Columns\TextColumn::make('user.name')
-                ->label('User'),
+                ->label('المستخدم'),
 
             Tables\Columns\TextColumn::make('total')
+              ->label('المحموع')
                 ->money('LYD'),
 
             Tables\Columns\TextColumn::make('created_at')
@@ -86,43 +92,9 @@ class OrderResource extends Resource
     }
 
     // ================= BEFORE CREATE 🔥 =================
-    public static function mutateFormDataBeforeCreate(array $data): array
-    {
-        $user = User::find($data['user_id']);
 
-        // 🧮 حساب المجموع
-        $total = collect($data['items'])->sum(function ($item) {
-            return $item['price'] * $item['quantity'];
-        });
-
-        // ❌ منع إذا الرصيد غير كافي
-        if ($user->balance < $total) {
-
-            Notification::make()
-                ->title('الرصيد غير كافي')
-                ->danger()
-                ->send();
-
-            throw new \Exception('Balance not enough');
-        }
-
-        // حفظ المجموع
-        $data['total'] = $total;
-
-        return $data;
-    }
 
     // ================= AFTER CREATE 🔥 =================
-    public static function afterCreate($record)
-    {
-        // خصم الرصيد + تسجيل transaction
-        app(\App\Services\PurchaseService::class)
-            ->buy(
-                $record->user,
-                $record->total,
-                'Order #' . $record->id
-            );
-    }
 
     // ================= PAGES =================
     public static function getPages(): array

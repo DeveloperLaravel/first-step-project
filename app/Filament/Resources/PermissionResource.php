@@ -18,8 +18,10 @@ use Illuminate\Support\Facades\Auth;
 class PermissionResource extends Resource
 {
     protected static ?string $model = Permission::class;
+    protected static ?string $navigationGroup = 'ادارة المستخدمين';
 
   protected static ?string $navigationIcon = 'heroicon-o-lock-closed';
+  protected static ?int $navigationSort = 3;
     protected static ?string $navigationLabel = 'الصلاحيات';
     protected static ?string $modelLabel = 'صلاحية';
         protected static ?string $pluralModelLabel = 'الصلاحيات';

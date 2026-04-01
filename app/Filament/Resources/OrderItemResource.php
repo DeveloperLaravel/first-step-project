@@ -20,9 +20,10 @@ class OrderItemResource extends Resource
         NAVIGATION (عربي)
     ========================== */
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
-    protected static ?string $navigationGroup = 'إدارة الطلبات';
     protected static ?string $label = 'عنصر طلب';
     protected static ?string $pluralLabel = 'عناصر الطلبات';
+ protected static ?int $navigationSort = 4;
+protected static ?string $navigationGroup = 'ادارت الطلبات';
 
     /* =========================
         FORM (إنشاء / تعديل)

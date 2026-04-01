@@ -36,6 +36,37 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+             // ================= NAVIGATION GROUPS =================
+        ->navigationGroups([
+
+            'Dashboard',
+            'User Management',
+            'Access Control',
+            'Pharmacy System',
+            'Orders System',
+            'Finance',
+
+        ])
+
+        // ================= RESOURCES =================
+        ->resources([
+
+            // 👤 Users
+            \App\Filament\Resources\UserResource::class,
+
+            // 🛡️ Roles & Permissions (Spatie)
+            \App\Filament\Resources\RoleResource::class,
+            \App\Filament\Resources\PermissionResource::class,
+
+            // 💊 Medicines
+            \App\Filament\Resources\MedicineResource::class,
+
+            // 🧾 Orders
+            \App\Filament\Resources\OrderResource::class,
+
+            // 💰 Transactions
+            \App\Filament\Resources\TransactionResource::class,
+        ])
             ->brandName('نظام إدارة المستخدمين')
             ->registration()
 ->databaseNotifications()

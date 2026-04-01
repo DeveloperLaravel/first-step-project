@@ -22,6 +22,8 @@ class CardResource extends Resource
     protected static ?string $navigationIcon = 'heroicon-o-credit-card';
     protected static ?string $navigationLabel = 'الكروت';
     protected static ?string $pluralModelLabel = 'الكروت';
+ protected static ?int $navigationSort = 2;
+protected static ?string $navigationGroup = 'ادارة الكروات';
 
     // ================= FORM =================
     public static function form(Form $form): Form

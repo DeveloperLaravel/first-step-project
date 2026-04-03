@@ -4,6 +4,9 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\TransactionResource\Pages;
 use App\Models\Transaction;
+use App\Observers\CardService ;
+use App\Observers\PurchaseService;
+use App\Service\PurchaseService as ServicePurchaseService;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
@@ -28,164 +31,90 @@ class TransactionResource extends Resource
 protected static ?string $navigationGroup = 'ادترة العمليات المالية';
 
     // 🧾 الفورم
-    public static function form(Form $form): Form
+public static function form(Form $form): Form
+{
+    return $form->schema([
+
+        TextInput::make('user.name')
+            ->label('المستخدم')
+            ->disabled(),
+
+        TextInput::make('amount')
+            ->label('المبلغ')
+            ->disabled(),
+
+        TextInput::make('type')
+            ->label('نوع العملية')
+            ->disabled(),
+
+        TextInput::make('order.order_number')
+            ->label('رقم الطلب')
+            ->disabled(),
+
+        TextInput::make('reference')
+            ->label('رقم العملية')
+            ->disabled(),
+
+        Textarea::make('description')
+            ->label('الوصف')
+            ->disabled(),
+
+        TextInput::make('created_at')
+            ->label('التاريخ')
+            ->disabled(),
+
+    ]);
+}
+
+    // 📊 الجدول
+   // ================= TABLE =================
+    public static function table(Table $table): Table
     {
-        return $form->schema([
+        return $table->columns([
 
-            Select::make('user_id')
+            TextColumn::make('user.name')
                 ->label('المستخدم')
-                ->relationship('user', 'name')
-                ->searchable()
-                ->required(),
+                ->searchable(),
 
-            TextInput::make('amount')
+            TextColumn::make('amount')
                 ->label('المبلغ')
-                ->numeric()
-                ->required()
-                ->prefix('د.ل')
-                ->minValue(0.01),
+                ->money('USD')
+                ->sortable(),
 
-            Select::make('type')
-                ->label('نوع العملية')
+            TextColumn::make('type')
+                ->label('النوع')
+                ->badge()
+                ->colors([
+                    'success' => 'recharge',
+                    'danger' => 'purchase',
+                    'warning' => 'refund',
+                ]),
+
+            TextColumn::make('order.order_number')
+                ->label('رقم الطلب')
+                ->default('-'),
+
+            TextColumn::make('created_at')
+                ->label('التاريخ')
+                ->dateTime(),
+
+        ])
+        ->filters([
+            Tables\Filters\SelectFilter::make('type')
                 ->options([
                     'recharge' => 'شحن',
                     'purchase' => 'شراء',
+                    'refund' => 'استرجاع',
                 ])
-                ->required()
-                ->native(false),
+        ])
+        ->actions([
+            Tables\Actions\ViewAction::make(),
 
-            Textarea::make('description')
-                ->label('الوصف')
-                ->placeholder('اكتب ملاحظة...')
-                ->columnSpanFull(),
+            // ❌ منع التعديل (مهم جدًا)
+        ])
+        ->bulkActions([
+            Tables\Actions\DeleteBulkAction::make(),
         ]);
-    }
-
-    // 📊 الجدول
-    public static function table(Table $table): Table
-    {
-        return $table
-
-            ->columns([
-                TextColumn::make('user.name')
-                    ->label('المستخدم')
-                    ->searchable()
-                    ->sortable(),
-
-                TextColumn::make('amount')
-                    ->label('المبلغ')
-                    ->money('LYD')
-                    ->sortable(),
-
-                TextColumn::make('type')
-                    ->label('النوع')
-                    ->badge()
-                    ->formatStateUsing(fn ($state) => match ($state) {
-                        'recharge' => 'شحن',
-                        'purchase' => 'شراء',
-                    })
-                    ->colors([
-                        'success' => 'recharge',
-                        'danger' => 'purchase',
-                    ]),
-
-                TextColumn::make('description')
-                    ->label('الوصف')
-                    ->limit(30),
-
-                TextColumn::make('created_at')
-                    ->label('التاريخ')
-                    ->dateTime()
-                    ->sortable(),
-            ])
-
-            // 🔥 الأزرار العلوية (المهم)
-            ->headerActions([
-
-                // 🔋 شحن
-                Action::make('redeem_card')
-                    ->label('شحن')
-                    ->icon('heroicon-o-qr-code')
-                    ->form([
-                        TextInput::make('code')
-                            ->label('كود الكرت')
-                            ->required()
-                    ])
-                    ->action(function (array $data) {
-
-                        try {
-                            app(\App\Services\CardService::class)
-                                ->redeem($data['code'], FacadesAuth::user()->id);
-
-                            Notification::make()
-                                ->title('تم الشحن بنجاح')
-                                ->success()
-                                ->send();
-
-                        } catch (\Exception $e) {
-                            Notification::make()
-                                ->title($e->getMessage())
-                                ->danger()
-                                ->send();
-                        }
-
-                    }),
-
-                // 🛒 شراء
-                Action::make('purchase')
-                    ->label('شراء')
-                    ->icon('heroicon-o-shopping-cart')
-                    ->form([
-                        TextInput::make('amount')
-                            ->label('المبلغ')
-                            ->numeric()
-                            ->required(),
-
-                        Textarea::make('description')
-                            ->label('الوصف'),
-                    ])
-                    ->action(function (array $data) {
-
-                        try {
-                            app(\App\Services\PurchaseService::class)
-                                ->buy(
-                                    FacadesAuth::user()->id,
-                                    $data['amount'],
-                                    $data['description'] ?? null
-                                );
-
-                            Notification::make()
-                                ->title('تمت عملية الشراء')
-                                ->success()
-                                ->send();
-
-                        } catch (\Exception $e) {
-                            Notification::make()
-                                ->title($e->getMessage())
-                                ->danger()
-                                ->send();
-                        }
-
-                    }),
-            ])
-
-            ->filters([
-                SelectFilter::make('type')
-                    ->label('نوع العملية')
-                    ->options([
-                        'recharge' => 'شحن',
-                        'purchase' => 'شراء',
-                    ]),
-            ])
-
-            ->actions([
-                Tables\Actions\EditAction::make()->label('تعديل'),
-                Tables\Actions\DeleteAction::make()->label('حذف'),
-            ])
-
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()->label('حذف المحدد'),
-            ]);
     }
 
     // 📄 الصفحات

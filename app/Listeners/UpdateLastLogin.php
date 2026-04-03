@@ -20,7 +20,7 @@ class UpdateLastLogin
 
         $user->update([
             'last_login_at' => now(),
-            // 'last_login_ip' => request()->ip(),
+            'last_login_ip' => request()->ip(),
         ]);
     }
 }

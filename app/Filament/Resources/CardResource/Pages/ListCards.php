@@ -4,8 +4,11 @@ namespace App\Filament\Resources\CardResource\Pages;
 
 use App\Filament\Resources\CardResource;
 use App\Models\Card;
+use App\Service\CardService;
 use Filament\Actions;
 use Filament\Actions\Action;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -18,6 +21,43 @@ class ListCards extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
+Action::make('redeem')
+    ->label('شحن كرت')
+    ->icon('heroicon-o-credit-card')
+    ->color('success')
+    ->form([
+        TextInput::make('code')
+            ->label('كود الكرت')
+            ->required()
+            ->minLength(6)
+            ->maxLength(50)
+            ->placeholder('أدخل كود الكرت')
+            ->autocomplete(false),
+    ])
+    ->action(function (array $data, CardService $cardService) {
+
+        try {
+            $result = $cardService->redeem($data['code']);
+
+            Notification::make()
+                ->title('تم الشحن بنجاح ✅')
+                ->body("تم إضافة {$result['amount_formatted']} إلى حسابك\nرصيدك الحالي: {$result['balance']}")
+                ->success()
+                ->duration(5000)
+                ->send();
+
+        } catch (\Throwable $e) {
+
+            report($e); // تسجيل الخطأ في اللوق
+
+            Notification::make()
+                ->title('فشل العملية ❌')
+                ->body($e->getMessage())
+                ->danger()
+                ->duration(5000)
+                ->send();
+        }
+    }),
             Actions\CreateAction::make(),
             Action::make('generate_cards')
                 ->label('توليد كروت')

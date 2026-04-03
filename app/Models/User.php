@@ -88,15 +88,16 @@ use SoftDeletes;
             'password' => 'hashed',
         ];
     }
+    public function usedCards()
+{
+    return $this->hasMany(Card::class, 'used_by');
+}
 public function createdCards()
 {
     return $this->hasMany(Card::class, 'created_by');
 }
 
-public function usedCards()
-{
-    return $this->hasMany(Card::class, 'used_by');
-}
+
  public function orders()
     {
         return $this->hasMany(Order::class);

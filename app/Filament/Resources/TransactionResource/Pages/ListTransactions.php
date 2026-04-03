@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\TransactionResource\Pages;
 
 use App\Filament\Resources\TransactionResource;
+use App\Service\CardService;
 use Filament\Actions;
 use Filament\Actions\Action;
 use Filament\Forms\Components\TextInput;
@@ -18,7 +19,7 @@ class ListTransactions extends ListRecords
         return [
             Actions\CreateAction::make(),
             Action::make('redeem_card')
-    ->label('Recharge via Card')
+    ->label('شحن كرت')
     ->icon('heroicon-o-qr-code')
     ->form([
         TextInput::make('code')
@@ -27,7 +28,7 @@ class ListTransactions extends ListRecords
     ])
     ->action(function (array $data) {
 
-        app(\App\Services\CardService::class)
+        app(CardService::class)
             ->redeem($data['code'], Auth::user());
 
     })

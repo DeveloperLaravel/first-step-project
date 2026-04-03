@@ -16,16 +16,25 @@ return new class extends Migration
              $table->foreignId('user_id')
         ->constrained('users')
         ->cascadeOnDelete();
-
-  $table->decimal('total', 10, 2)->default(0);
-  $table->enum('status', [
+           $table->string('order_number')->unique();
+           $table->decimal('total', 10, 2)->default(0);
+             $table->enum('status', [
         'pending',
         'processing',
         'completed',
         'cancelled'
-    ])->default('pending');
-$table->string('order_number')->unique();
+           ])->default('pending');
+         // حالة الدفع
+         $table->enum('payment_status', [
+       'unpaid',
+         'paid',
+           'failed'
+])->default('unpaid');
+
 $table->text('notes')->nullable();
+
+        // تحسين الأداء
+    $table->index(['user_id', 'status']);
             $table->timestamps();
         });
     }

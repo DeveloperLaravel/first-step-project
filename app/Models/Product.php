@@ -4,13 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Medicine extends Model
+class Product extends Model
 {
    protected $fillable = [
         'name',
         'price',
         'quantity',
         'image',
-        'description'
+        'description',
+        'stock'
     ];
+
+        public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class);
+    }
 }

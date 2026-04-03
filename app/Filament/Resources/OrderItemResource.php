@@ -1,13 +1,16 @@
 <?php
 
 namespace App\Filament\Resources;
-
 use App\Filament\Resources\OrderItemResource\Pages;
+
 use App\Models\OrderItem;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
+use App\Models\Product;
+use Filament\Forms;
 use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
+use Filament\Forms\Components\Grid;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
@@ -16,127 +19,127 @@ class OrderItemResource extends Resource
 {
     protected static ?string $model = OrderItem::class;
 
-    /* =========================
-        NAVIGATION (عربي)
-    ========================== */
     protected static ?string $navigationIcon = 'heroicon-o-shopping-cart';
-    protected static ?string $label = 'عنصر طلب';
-    protected static ?string $pluralLabel = 'عناصر الطلبات';
- protected static ?int $navigationSort = 4;
-protected static ?string $navigationGroup = 'ادارت الطلبات';
+      protected static ?int $navigationSort = 2;
 
-    /* =========================
-        FORM (إنشاء / تعديل)
-    ========================== */
+    protected static ?string $navigationGroup = 'إدارة الطلبات';
+
+    protected static ?string $navigationLabel = 'عناصر الطلبات';
+    protected static ?string $pluralModelLabel = 'عناصر الطلبات';
+    protected static ?string $modelLabel = 'عنصر طلب';
+
+    // ================= FORM =================
     public static function form(Form $form): Form
     {
-        return $form
-            ->schema([
+        return $form->schema([
+
+            Grid::make(2)->schema([
 
                 Select::make('order_id')
-                    ->label('رقم الطلب')
-                    ->relationship('order', 'id')
+                    ->label('الطلب')
+                    ->relationship('order', 'order_number')
                     ->searchable()
-                    ->preload()
                     ->required(),
 
-                Select::make('medicine_id')
-                    ->label('الدواء')
-                    ->relationship('medicine', 'name')
+                Select::make('product_id')
+                    ->label('المنتج')
+                    ->relationship('product', 'name')
                     ->searchable()
-                    ->preload()
-                    ->required()
                     ->reactive()
                     ->afterStateUpdated(function ($state, callable $set) {
-                        $medicine = \App\Models\Medicine::find($state);
-
-                        if ($medicine) {
-                            $set('price', $medicine->price);
+                        $product = Product::find($state);
+                        if ($product) {
+                            $set('price', $product->price);
                         }
-                    }),
+                    })
+                    ->required(),
 
                 TextInput::make('quantity')
                     ->label('الكمية')
                     ->numeric()
-                    ->required()
-                    ->minValue(1)
-                    ->default(1),
+                    ->default(1)
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                        $set('subtotal', $state * $get('price'));
+                    }),
 
                 TextInput::make('price')
-                    ->label('سعر الوحدة')
+                    ->label('السعر')
                     ->numeric()
                     ->required()
-                    ->prefix('د.ل'),
+                    ->reactive()
+                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                        $set('subtotal', $state * $get('quantity'));
+                    }),
 
-            ]);
+                TextInput::make('subtotal')
+                    ->label('الإجمالي')
+                    ->numeric()
+                    ->disabled()
+                    ->dehydrated(true),
+
+                Select::make('card_id')
+                    ->label('الكرت (اختياري)')
+                    ->relationship('card', 'code')
+                    ->searchable()
+                    ->nullable(),
+
+            ]),
+        ]);
     }
 
-    /* =========================
-        TABLE (عرض البيانات)
-    ========================== */
+    // ================= TABLE =================
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
+        return $table->columns([
 
-                TextColumn::make('order.id')
-                    ->label('رقم الطلب')
-                    ->sortable()
-                    ->searchable()
-                    ->badge()
-                    ->color('primary'),
+            TextColumn::make('order.order_number')
+                ->label('رقم الطلب')
+                ->searchable(),
 
-                TextColumn::make('medicine.name')
-                    ->label('الدواء')
-                    ->sortable()
-                    ->searchable()
-                    ->wrap(),
+            TextColumn::make('product.name')
+                ->label('المنتج')
+                ->searchable(),
 
-                TextColumn::make('quantity')
-                    ->label('الكمية')
-                    ->sortable()
-                    ->alignCenter(),
+            TextColumn::make('quantity')
+                ->label('الكمية'),
 
-                TextColumn::make('price')
-                    ->label('سعر الوحدة')
-                    ->money('LYD')
-                    ->sortable(),
+            TextColumn::make('price')
+                ->label('السعر')
+                ->money('USD'),
 
-                TextColumn::make('total')
-                    ->label('الإجمالي')
-                    ->state(fn ($record) => $record->quantity * $record->price)
-                    ->money('LYD')
-                    ->weight('bold')
-                    ->color('success'),
+            TextColumn::make('subtotal')
+                ->label('الإجمالي')
+                ->money('LYD'),
 
-                TextColumn::make('created_at')
-                    ->label('تاريخ الإنشاء')
-                    ->dateTime('Y-m-d H:i')
-                    ->sortable()
-                    ->toggleable(),
+            TextColumn::make('card.code')
+                ->label('الكرت')
+                ->default('-'),
 
-            ])
-            ->defaultSort('created_at', 'desc')
-            ->striped()
-            ->paginated([10, 25, 50])
-            ->actions([
-                Tables\Actions\EditAction::make()
-                    ->label('تعديل')
-                    ->icon('heroicon-o-pencil-square'),
+            TextColumn::make('created_at')
+                ->label('تاريخ')
+                ->dateTime(),
 
-                Tables\Actions\DeleteAction::make()
-                    ->label('حذف')
-                    ->icon('heroicon-o-trash'),
-            ])
-            ->bulkActions([
-                Tables\Actions\DeleteBulkAction::make()
-                    ->label('حذف المحدد'),
-            ]);
+        ])
+        ->filters([
+            Tables\Filters\SelectFilter::make('order_id')
+                ->relationship('order', 'order_number')
+        ])
+        ->actions([
+            Tables\Actions\EditAction::make(),
+            Tables\Actions\DeleteAction::make(),
+        ])
+        ->bulkActions([
+            Tables\Actions\DeleteBulkAction::make(),
+        ]);
     }
 
-    /* =========================
-        PAGES
-    ========================== */
+    // ================= AUTO CALCULATE =================
+
+
+
+
+    // ================= PAGES =================
     public static function getPages(): array
     {
         return [

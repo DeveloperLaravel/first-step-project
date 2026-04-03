@@ -13,11 +13,26 @@ return new class extends Migration
     {
         Schema::create('order_items', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('order_id');
-$table->foreignId('medicine_id');
-$table->integer('quantity');
-$table->decimal('price', 10, 2);
+            $table->foreignId('order_id') ->constrained('orders')
+        ->cascadeOnDelete();
+$table->foreignId('product_id') ->constrained('products')
+        ->cascadeOnDelete();
+$table->integer('quantity')->default(1);
+$table->decimal('price', 10, 2);// سعر وقت الشراء
+
+   // الإجمالي لكل عنصر
+    $table->decimal('subtotal', 10, 2);
+    // للكروت فقط
+    $table->foreignId('card_id')
+        ->nullable()
+        ->constrained()
+        ->nullOnDelete();
+
+
+   // تحسين الأداء
+    $table->index(['order_id', 'product_id']);
             $table->timestamps();
+
         });
     }
 

@@ -45,7 +45,7 @@ class StatsOverview extends BaseWidget
         // Card::make('إجمالي الطلبات', Order::count()),
         //         Card::make('الكروت المستخدمة', Card::where('is_used',1)->count()),
  Card::make('الطلبات', Order::count()),
-        Card::make('الكروت المستخدمة', ModelsCard::where('is_used', 1)->count()),
+        Card::make('الكروت المستخدمة', ModelsCard::where('status', 1)->count()),
 
 
         ];

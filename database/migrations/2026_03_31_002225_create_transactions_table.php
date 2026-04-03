@@ -15,11 +15,24 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')
               ->cascadeOnDelete();
+            // ربط اختياري بالطلب
+
+               $table->foreignId('order_id')
+        ->nullable()
+        ->constrained()
+        ->nullOnDelete();
             $table->decimal('amount', 10, 2);
+            $table->enum('type', ['recharge', 'purchase'])->index();
+             $table->enum('status', ['pending', 'completed', 'failed'])
+        ->default('completed');
+          $table->string('reference')->nullable(); // رقم العملية
             $table->text('description')->nullable();
-            $table->enum('type', ['recharge', 'purchase']);
+
+
+
 
             $table->timestamps();
+              $table->index(['user_id', 'type']);
         });
     }
 

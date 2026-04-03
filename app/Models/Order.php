@@ -3,13 +3,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use App\Services\PurchaseService;
 
 class Order extends Model
 {
     protected $fillable = [
         'user_id',
         'total',
+        'status',
+        'order_number',
+        'payment_status',
+        'notes',
     ];
 
     // العلاقات
@@ -22,38 +25,29 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
-
+public function transaction()
+{
+    return $this->hasOne(Transaction::class);
+}
     // 🧮 حساب المجموع
     public function calculateTotal()
     {
         return $this->items->sum(function ($item) {
-            return $item->price * $item->quantity;
+        $item->price * $item->quantity;
+
         });
+
     }
 
     // 🔥 الاحتراف الحقيقي هنا
-    protected static function booted()
-    {
-        static::created(function ($order) {
+protected static function boot()
+{
+    parent::boot();
 
-            DB::transaction(function () use ($order) {
+    static::creating(function ($order) {
+        $order->order_number =
+            'ORD-' . date('Y') . '-' . str_pad(self::count() + 1, 5, '0', STR_PAD_LEFT);
+    });
+}
 
-                // تحديث المجموع
-                $total = $order->calculateTotal();
- // 🔥 2. تحديث الطلب
-                $order->update([
-                    'total' => $total
-                ]);
-
-                // خصم الرصيد + تسجيل transaction
-                app(PurchaseService::class)->buy(
-                    $order->user,
-                    $total,
-                    'Order #' . $order->id
-                );
-
-            });
-
-        });
-    }
 }

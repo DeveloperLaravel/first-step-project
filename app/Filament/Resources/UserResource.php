@@ -71,6 +71,7 @@ class UserResource extends Resource
                 ->dehydrateStateUsing(fn ($state) => filled($state) ? bcrypt($state) : null)
                 ->dehydrated(fn ($state) => filled($state)),
 TextInput::make('balance')
+->default(0)
     ->numeric() ->label('الرصيد')->disabled(),
             Select::make('roles')
                 ->label('الدور')

@@ -4,6 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\CardResource\Pages;
 use App\Models\Card;
+use App\Service\CardService;
+use App\Service\CardServices;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -12,9 +14,12 @@ use Filament\Tables\Table;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Notifications\Notification;
 use Filament\Tables\Actions\BulkAction;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Filament\Tables\Columns\ImageColumn;
+use Illuminate\Support\Facades\DB;
+
 class CardResource extends Resource
 {
     protected static ?string $model = Card::class;
@@ -138,33 +143,35 @@ Tables\Actions\Action::make('use_card')
     ->label('استخدام الكرت')
     ->color('success')
     ->icon('heroicon-o-check')
-    ->visible(fn ($record) => $record->status === 'active')
+    // ->visible(fn ($record) => $record->status === 'active')
     ->requiresConfirmation()
-    ->action(function ($record) {
+    ->disabled(fn ($record) => $record->status !== 'active')
 
-    $updated = Card::where('id', $record->id)
-            ->where('status', Card::STATUS_ACTIVE)
-            ->update([
-                'status' => Card::STATUS_USED,
-                'used_by' => Auth::id(),
-                'used_at' => now(),
-            ]);
-        // 🔥 حماية قوية
-        if ($record->status !== 'active') {
-            \Filament\Notifications\Notification::make()
-                ->title('خطأ')
-                ->body('الكرت مستخدم أو منتهي')
-                ->danger()
+    ->action(function ($record, CardService $service) {
+
+        try {
+
+               $result =$service->redeem($record->code);
+                // 🧾 (اختياري) تسجيل العملية
+
+
+            // ✅ نجاح
+            Notification::make()
+                ->title('تم بنجاح ✅')
+                ->body('تم شحن الرصيد بنجاح')
+                ->success()
                 ->send();
 
-            return;
+        } catch (\Exception $e) {
+
+            // ❌ فشل
+            Notification::make()
+                ->title('خطأ ❌')
+                ->body($e->getMessage())
+                ->danger()
+                ->send();
         }
 
-        $record->update([
-            'status' => 'used',
-            'used_by' => Auth::user()->id,
-            'used_at' => now(),
-        ]);
     }),
                 Tables\Actions\DeleteAction::make(),
             ])

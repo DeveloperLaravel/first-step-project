@@ -34,7 +34,8 @@ return new class extends Migration
         ->nullOnDelete();
         $table->timestamp('expires_at')->nullable();
         $table->timestamp('used_at')->nullable();
-
+    // تحسين الأداء
+    $table->index(['status', 'expires_at']);
             $table->timestamps();
         });
     }

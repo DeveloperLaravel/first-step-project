@@ -11,13 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('medicines', function (Blueprint $table) {
+        Schema::create('products', function (Blueprint $table) {
             $table->id();
             $table->string('name');
 $table->text('description')->nullable();
 $table->decimal('price', 10, 2);
-$table->integer('quantity');
+            $table->integer('stock')->default(0);
 $table->string('image')->nullable();
+  // تحسين الأداء
+    $table->index('price');
+
             $table->timestamps();
         });
     }
@@ -27,6 +30,6 @@ $table->string('image')->nullable();
      */
     public function down(): void
     {
-        Schema::dropIfExists('medicines');
+        Schema::dropIfExists('products');
     }
 };

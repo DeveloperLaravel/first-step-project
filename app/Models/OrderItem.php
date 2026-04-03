@@ -8,20 +8,38 @@ class OrderItem extends Model
 {
     protected $fillable = [
         'order_id',
-        'medicine_id',
+        'product_id',
         'quantity',
-        'price'
+        'price',
+        'subtotal',
+        'card_id'
+
     ];
     public function order()
     {
         return $this->belongsTo(Order::class);
     }
- public function medicine()
+ public function product()
     {
-        return $this->belongsTo(Medicine::class);
+        return $this->belongsTo(Product::class);
     }
-        public function getTotalAttribute()
-    {
-        return $this->quantity * $this->price;
-    }
+    public function card()
+{
+    return $this->belongsTo(Card::class);
+}
+    //     public function getTotalAttribute()
+    // {
+    //     return $this->quantity * $this->price;
+    // }
+    public function items()
+{
+    return $this->hasMany(OrderItem::class);
+}
+
+protected static function booted()
+{
+    static::saving(function ($item) {
+        $item->subtotal = $item->quantity * $item->price;
+    });
+}
 }
